@@ -21,7 +21,10 @@ router.get("/lab-tests", async (req, res) => {
   try {
     const user = (req as any).user;
     if (!user) return res.status(401).json({ error: "Unauthorized" });
-    const tests = await db.select().from(labTestsTable).where(eq(labTestsTable.userId, user.id));
+    // Admins see all lab tests; regular users see only their own
+    const tests = (user as any).isAdmin
+      ? await db.select().from(labTestsTable)
+      : await db.select().from(labTestsTable).where(eq(labTestsTable.userId, user.id));
     const enriched = await Promise.all(tests.map(enrichLabTest));
     res.json(enriched);
   } catch (e) {
@@ -73,7 +76,14 @@ router.patch("/lab-tests/:id", async (req, res) => {
 
 router.delete("/lab-tests/:id", async (req, res) => {
   try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
     const { id } = DeleteLabTestParams.parse({ id: Number(req.params.id) });
+    const [lt] = await db.select().from(labTestsTable).where(eq(labTestsTable.id, id));
+    if (!lt) return res.status(404).json({ error: "Lab test not found" });
+    if (lt.userId !== user.id && !(user as any).isAdmin) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
     await db.delete(labTestsTable).where(eq(labTestsTable.id, id));
     res.status(204).send();
   } catch (e) {

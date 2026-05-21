@@ -1,8 +1,12 @@
-import { Link, useLocation } from "wouter";
-import { FlaskConical, Plus, Download, FileText } from "lucide-react";
+import { Link } from "wouter";
+import { FlaskConical, Plus, Download, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useListLabTests, useDeleteLabTest, getListLabTestsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +43,7 @@ export default function LabTests() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Lab Tests</h1>
@@ -98,15 +102,41 @@ export default function LabTests() {
                       </a>
                     )}
                     {test.status === "pending" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                        onClick={() => handleCancel(test.id)}
-                        data-testid={`button-cancel-${test.id}`}
-                      >
-                        Cancel
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                            data-testid={`button-cancel-${test.id}`}
+                          >
+                            Cancel
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="w-5 h-5 text-destructive" />
+                              Cancel Lab Test
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to cancel{" "}
+                              <strong>{test.testName}</strong>
+                              {test.scheduledDate ? ` scheduled for ${test.scheduledDate}` : ""}?
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep Test</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive hover:bg-destructive/90"
+                              onClick={() => handleCancel(test.id)}
+                            >
+                              Yes, Cancel
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </div>
                 </div>

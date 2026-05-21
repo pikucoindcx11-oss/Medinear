@@ -1,16 +1,22 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { MapPin, Phone, Clock, ExternalLink, ArrowLeft, Stethoscope, Star } from "lucide-react";
+import { MapPin, Phone, Clock, ExternalLink, ArrowLeft, Stethoscope, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { useGetShop, useListShopDoctors, useListReviews, getGetShopQueryKey } from "@workspace/api-client-react";
 import StarRating from "@/components/StarRating";
+import WriteReview from "@/components/WriteReview";
+import { useAuth } from "@workspace/replit-auth-web";
 
 export default function ShopDetail({ id }: { id: number }) {
   const { data: shop, isLoading } = useGetShop(id, { query: { queryKey: getGetShopQueryKey(id) } });
   const { data: doctors } = useListShopDoctors(id);
   const { data: reviews } = useListReviews({ shopId: id });
+  const { isAuthenticated, login } = useAuth();
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   if (isLoading) {
     return (
@@ -115,13 +121,35 @@ export default function ShopDetail({ id }: { id: number }) {
       )}
 
       {/* Reviews */}
-      {reviews && reviews.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Reviews ({reviews.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {reviews.map((review) => (
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="text-lg">
+              Reviews {reviews && reviews.length > 0 ? `(${reviews.length})` : ""}
+            </CardTitle>
+            {isAuthenticated && !showReviewForm && (
+              <Button size="sm" variant="outline" className="flex items-center gap-1.5" onClick={() => setShowReviewForm(true)}>
+                <PenLine className="w-3.5 h-3.5" /> Write a Review
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Write review form */}
+          {isAuthenticated && showReviewForm && (
+            <>
+              <WriteReview shopId={id} onSuccess={() => setShowReviewForm(false)} />
+              <Separator />
+            </>
+          )}
+          {!isAuthenticated && (
+            <div className="flex items-center justify-between bg-muted/40 rounded-lg px-3 py-2.5 mb-2">
+              <p className="text-sm text-muted-foreground">Sign in to leave a review</p>
+              <Button size="sm" variant="outline" onClick={login}>Sign In</Button>
+            </div>
+          )}
+          {reviews && reviews.length > 0 ? (
+            reviews.map((review) => (
               <div key={review.id} className="border-b border-border last:border-0 pb-3 last:pb-0">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-sm">{review.userName ?? "Patient"}</span>
@@ -129,10 +157,14 @@ export default function ShopDetail({ id }: { id: number }) {
                 </div>
                 {review.comment && <p className="text-sm text-muted-foreground">{review.comment}</p>}
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No reviews yet. Be the first to rate this shop!
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

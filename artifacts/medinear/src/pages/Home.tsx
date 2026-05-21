@@ -28,7 +28,7 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-6 pb-24 md:pb-8 space-y-8">
       {/* Hero */}
       <div className="relative rounded-2xl bg-gradient-to-br from-primary to-teal-600 dark:from-primary dark:to-teal-500 p-8 overflow-hidden">
         <div className="absolute inset-0 opacity-10">

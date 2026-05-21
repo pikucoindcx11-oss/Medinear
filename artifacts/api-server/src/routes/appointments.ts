@@ -43,10 +43,10 @@ router.get("/appointments", async (req, res) => {
     const user = (req as any).user;
     if (!user) return res.status(401).json({ error: "Unauthorized" });
     const query = ListAppointmentsQueryParams.parse(req.query);
-    let apts = await db
-      .select()
-      .from(appointmentsTable)
-      .where(eq(appointmentsTable.userId, user.id));
+    // Admins see all appointments; regular users see only their own
+    let apts = (user as any).isAdmin
+      ? await db.select().from(appointmentsTable)
+      : await db.select().from(appointmentsTable).where(eq(appointmentsTable.userId, user.id));
     if (query.status) {
       apts = apts.filter((a) => a.status === query.status);
     }

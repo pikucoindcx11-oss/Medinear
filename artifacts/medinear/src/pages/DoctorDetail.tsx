@@ -1,17 +1,21 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, Stethoscope, MapPin, Clock, DollarSign, Award, Star, Calendar } from "lucide-react";
+import { ArrowLeft, Stethoscope, MapPin, Clock, DollarSign, Award, Star, Calendar, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { useGetDoctor, useListReviews, getGetDoctorQueryKey } from "@workspace/api-client-react";
 import StarRating from "@/components/StarRating";
+import WriteReview from "@/components/WriteReview";
 import { useAuth } from "@workspace/replit-auth-web";
 
 export default function DoctorDetail({ id }: { id: number }) {
   const { data: doctor, isLoading } = useGetDoctor(id, { query: { queryKey: getGetDoctorQueryKey(id) } });
   const { data: reviews } = useListReviews({ doctorId: id });
   const { isAuthenticated, login } = useAuth();
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   if (isLoading) {
     return (
@@ -133,13 +137,44 @@ export default function DoctorDetail({ id }: { id: number }) {
         </Card>
       )}
 
-      {reviews && reviews.length === 0 && (
+      {reviews && reviews.length === 0 && !showReviewForm && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
-            No reviews yet. Be the first to review this doctor after your appointment.
+            No reviews yet. Be the first to review this doctor.
           </CardContent>
         </Card>
       )}
+
+      {/* Write a review */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <PenLine className="w-4 h-4" /> Write a Review
+            </CardTitle>
+            {!showReviewForm && isAuthenticated && (
+              <Button size="sm" variant="outline" onClick={() => setShowReviewForm(true)}>
+                Add Review
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!isAuthenticated ? (
+            <div className="text-center py-2">
+              <p className="text-sm text-muted-foreground mb-3">Sign in to leave a review</p>
+              <Button size="sm" variant="outline" onClick={login}>Sign In</Button>
+            </div>
+          ) : showReviewForm ? (
+            <WriteReview
+              doctorId={id}
+              onSuccess={() => setShowReviewForm(false)}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">Click "Add Review" to share your experience.</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

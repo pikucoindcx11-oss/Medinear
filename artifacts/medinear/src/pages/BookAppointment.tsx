@@ -1,9 +1,10 @@
 import { useLocation } from "wouter";
-import { ArrowLeft, CalendarIcon } from "lucide-react";
+import { ArrowLeft, Hash, Calendar, Stethoscope, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useCreateAppointment, useListDoctors, useListShops, getListAppointmentsQueryKey } from "@workspace/api-client-react";
+import { useCreateAppointment, useListDoctors, useListShops, useGetDoctor, getListAppointmentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@workspace/replit-auth-web";
 
@@ -48,11 +49,51 @@ export default function BookAppointment() {
     },
   });
 
+  const prefilledDoctorId = params.get("doctorId") ? parseInt(params.get("doctorId")!) : undefined;
+  const { data: prefilledDoctor } = useGetDoctor(prefilledDoctorId ?? 0, {
+    query: { enabled: !!prefilledDoctorId },
+  });
+
   if (!isAuthenticated) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-bold mb-2">Sign in to book an appointment</h2>
-        <Button onClick={login} className="mt-4">Sign In</Button>
+      <div className="max-w-lg mx-auto px-4 py-10">
+        {prefilledDoctor && (
+          <Card className="mb-6 overflow-hidden">
+            <div className="h-2 bg-gradient-to-r from-primary to-teal-400" />
+            <CardContent className="p-4 flex gap-4 items-center">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-primary/10 flex-shrink-0">
+                {prefilledDoctor.photoUrl
+                  ? <img src={prefilledDoctor.photoUrl} alt={prefilledDoctor.name} className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center"><Stethoscope className="w-6 h-6 text-primary" /></div>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">{prefilledDoctor.name}</p>
+                <Badge className="text-xs bg-primary/10 text-primary border-0 mt-0.5">{prefilledDoctor.specialization}</Badge>
+                <p className="text-xs text-muted-foreground mt-0.5">₹{prefilledDoctor.consultationFee} consultation fee</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Calendar className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold mb-1">Sign in to Book</h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              Create an account or sign in to book your appointment and get a token number instantly.
+            </p>
+            <ul className="text-left space-y-2 mb-6 text-sm text-muted-foreground">
+              {["Instant token number assigned", "Real-time status tracking", "Easy cancellation anytime", "Appointment history"].map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={login} className="w-full" size="lg">Sign In to Continue</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

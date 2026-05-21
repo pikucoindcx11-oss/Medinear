@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FlaskConical, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,9 +41,27 @@ export default function BookLabTest() {
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-bold mb-2">Sign in to book a lab test</h2>
-        <Button onClick={login} className="mt-4">Sign In</Button>
+      <div className="max-w-lg mx-auto px-4 py-10">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4">
+              <FlaskConical className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h2 className="text-xl font-bold mb-1">Sign in to Book a Lab Test</h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              Sign in to schedule lab tests at nearby medicine shops and track your results.
+            </p>
+            <ul className="text-left space-y-2 mb-6 text-sm text-muted-foreground">
+              {["Book from 12+ test categories", "Schedule at your preferred shop", "Track test status in real time", "Download reports when ready"].map((item) => (
+                <li key={item} className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={login} className="w-full" size="lg">Sign In to Continue</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

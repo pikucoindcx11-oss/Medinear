@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { Calendar, Plus, Stethoscope, MapPin, Clock, Hash } from "lucide-react";
+import { Calendar, Plus, Stethoscope, MapPin, Clock, Hash, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useListAppointments, useDeleteAppointment, getListAppointmentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -42,7 +46,7 @@ export default function Appointments() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">My Appointments</h1>
@@ -118,15 +122,41 @@ export default function Appointments() {
                     </div>
                   </div>
                   {apt.status === "pending" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive border-destructive/30 hover:bg-destructive/10 flex-shrink-0"
-                      onClick={() => handleCancel(apt.id)}
-                      data-testid={`button-cancel-${apt.id}`}
-                    >
-                      Cancel
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive border-destructive/30 hover:bg-destructive/10 flex-shrink-0"
+                          data-testid={`button-cancel-${apt.id}`}
+                        >
+                          Cancel
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-destructive" />
+                            Cancel Appointment
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to cancel your appointment with{" "}
+                            <strong>{apt.doctorName}</strong> on{" "}
+                            <strong>{apt.appointmentDate}</strong> at{" "}
+                            <strong>{apt.appointmentTime}</strong>? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Appointment</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive hover:bg-destructive/90"
+                            onClick={() => handleCancel(apt.id)}
+                          >
+                            Yes, Cancel
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </div>
               </CardContent>
