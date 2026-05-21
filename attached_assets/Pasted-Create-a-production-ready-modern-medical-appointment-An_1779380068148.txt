@@ -1,0 +1,106 @@
+Create a production-ready modern medical appointment Android app and web app called "MediNear".
+
+The app should help users find nearby medicine shops and doctors available in those shops.
+
+Main Features:
+
+1. User Authentication
+
+* Email login/signup
+* Phone OTP login
+* Forgot password
+* Firebase Authentication support
+
+2. Home Screen
+
+* Modern clean medical UI
+* Search bar for medicine shops
+* Nearby medical stores section
+* Doctor categories
+* Popular doctors
+
+3. Medicine Shop System
+
+* Each medicine shop should have:
+
+  * Shop name
+  * Address
+  * Phone number
+  * Open/close status
+  * Google Maps integration
+  * List of doctors available
+
+4. Doctor Information
+
+* Doctor profile photo
+* Name
+* Qualification
+* Specialization
+* Experience
+* Consultation fee
+* Available timing
+* Which medical shop they sit in
+
+5. Appointment Booking System
+
+* Users can book appointments
+* Token/serial number generation
+* Date & time selection
+* Booking history
+* Appointment status
+
+6. Lab Test System
+
+* Book lab tests online
+* Upload/download reports
+* PDF medical reports
+* Test categories
+
+7. Admin Panel
+
+* Admin can add/edit/delete:
+
+  * medicine shops
+  * doctors
+  * lab reports
+  * appointments
+
+8. Notification System
+
+* Appointment reminders
+* Booking confirmation
+* Push notifications
+
+9. Database & Backend
+
+* Use Firebase Firestore database
+* Firebase Storage
+* Firebase Authentication
+* Clean scalable backend structure
+
+10. UI Design
+
+* Modern dark/light mode
+* Mobile responsive
+* Professional healthcare design
+* Bottom navigation bar
+* Smooth animations
+
+11. Technical Requirements
+
+* Clean folder structure
+* Production-ready architecture
+* API-ready structure
+* Easy Android APK conversion
+* Future Play Store deployment support
+
+12. Extra Features
+
+* Search/filter doctors
+* Search by medical shop
+* Ratings & reviews
+* Emergency contact button
+
+Use modern React + Firebase or Flutter + Firebase stack.
+
+Generate complete frontend UI, backend structure, database schema, and reusable components.
