@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: MediNear API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: shops
+    description: Medicine shops
+  - name: doctors
+    description: Doctors
+  - name: appointments
+    description: Appointments
+  - name: lab-tests
+    description: Lab tests
+  - name: reviews
+    description: Reviews and ratings
+  - name: dashboard
+    description: Dashboard and stats
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,539 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/user:
+    get:
+      operationId: getAuthUser
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+
+  /shops:
+    get:
+      operationId: listShops
+      tags: [shops]
+      summary: List all medicine shops
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: isOpen
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of shops
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Shop"
+    post:
+      operationId: createShop
+      tags: [shops]
+      summary: Create a new medicine shop (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopInput"
+      responses:
+        "201":
+          description: Created shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+
+  /shops/{id}:
+    get:
+      operationId: getShop
+      tags: [shops]
+      summary: Get a shop by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Shop details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateShop
+      tags: [shops]
+      summary: Update a shop (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShopUpdate"
+      responses:
+        "200":
+          description: Updated shop
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shop"
+    delete:
+      operationId: deleteShop
+      tags: [shops]
+      summary: Delete a shop (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /shops/{id}/doctors:
+    get:
+      operationId: listShopDoctors
+      tags: [shops]
+      summary: List doctors available in a specific shop
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of doctors in this shop
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Doctor"
+
+  /doctors:
+    get:
+      operationId: listDoctors
+      tags: [doctors]
+      summary: List all doctors
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: specialization
+          in: query
+          schema:
+            type: string
+        - name: shopId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of doctors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Doctor"
+    post:
+      operationId: createDoctor
+      tags: [doctors]
+      summary: Create a new doctor (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DoctorInput"
+      responses:
+        "201":
+          description: Created doctor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Doctor"
+
+  /doctors/{id}:
+    get:
+      operationId: getDoctor
+      tags: [doctors]
+      summary: Get a doctor by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Doctor details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Doctor"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDoctor
+      tags: [doctors]
+      summary: Update a doctor (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DoctorUpdate"
+      responses:
+        "200":
+          description: Updated doctor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Doctor"
+    delete:
+      operationId: deleteDoctor
+      tags: [doctors]
+      summary: Delete a doctor (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /appointments:
+    get:
+      operationId: listAppointments
+      tags: [appointments]
+      summary: List appointments (for current user or admin all)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed]
+      responses:
+        "200":
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Appointment"
+    post:
+      operationId: createAppointment
+      tags: [appointments]
+      summary: Book an appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentInput"
+      responses:
+        "201":
+          description: Created appointment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+
+  /appointments/{id}:
+    get:
+      operationId: getAppointment
+      tags: [appointments]
+      summary: Get an appointment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Appointment details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAppointment
+      tags: [appointments]
+      summary: Update appointment status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentUpdate"
+      responses:
+        "200":
+          description: Updated appointment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+    delete:
+      operationId: deleteAppointment
+      tags: [appointments]
+      summary: Cancel/delete an appointment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /lab-tests:
+    get:
+      operationId: listLabTests
+      tags: [lab-tests]
+      summary: List lab test categories and bookings
+      responses:
+        "200":
+          description: List of lab tests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LabTest"
+    post:
+      operationId: createLabTest
+      tags: [lab-tests]
+      summary: Book a lab test
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LabTestInput"
+      responses:
+        "201":
+          description: Created lab test booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabTest"
+
+  /lab-tests/{id}:
+    get:
+      operationId: getLabTest
+      tags: [lab-tests]
+      summary: Get a lab test booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lab test details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabTest"
+    patch:
+      operationId: updateLabTest
+      tags: [lab-tests]
+      summary: Update lab test (admin — add report URL)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LabTestUpdate"
+      responses:
+        "200":
+          description: Updated lab test
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabTest"
+    delete:
+      operationId: deleteLabTest
+      tags: [lab-tests]
+      summary: Delete a lab test booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: List reviews for a doctor or shop
+      parameters:
+        - name: doctorId
+          in: query
+          schema:
+            type: integer
+        - name: shopId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Create a review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /reviews/{id}:
+    delete:
+      operationId: deleteReview
+      tags: [reviews]
+      summary: Delete a review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get app-wide stats (admin dashboard)
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/popular-doctors:
+    get:
+      operationId: getPopularDoctors
+      tags: [dashboard]
+      summary: Get top-rated/most-booked doctors for home screen
+      responses:
+        "200":
+          description: Popular doctors list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Doctor"
+
+  /dashboard/nearby-shops:
+    get:
+      operationId: getNearbyShops
+      tags: [dashboard]
+      summary: Get featured/nearby shops for home screen
+      responses:
+        "200":
+          description: Nearby shops list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Shop"
+
+  /dashboard/specializations:
+    get:
+      operationId: getSpecializations
+      tags: [dashboard]
+      summary: Get list of all doctor specializations
+      responses:
+        "200":
+          description: Specializations list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Specialization"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +576,368 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    AuthUser:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        firstName:
+          type: ["string", "null"]
+        lastName:
+          type: ["string", "null"]
+        profileImageUrl:
+          type: ["string", "null"]
+        isAdmin:
+          type: boolean
+      required: [id, isAdmin]
+
+    Shop:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        isOpen:
+          type: boolean
+        imageUrl:
+          type: ["string", "null"]
+        lat:
+          type: ["number", "null"]
+        lng:
+          type: ["number", "null"]
+        rating:
+          type: ["number", "null"]
+        reviewCount:
+          type: integer
+        openingTime:
+          type: ["string", "null"]
+        closingTime:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, name, address, phone, isOpen, reviewCount, createdAt]
+
+    ShopInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        address:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+        isOpen:
+          type: boolean
+        imageUrl:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        openingTime:
+          type: string
+        closingTime:
+          type: string
+      required: [name, address, phone]
+
+    ShopUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        isOpen:
+          type: boolean
+        imageUrl:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        openingTime:
+          type: string
+        closingTime:
+          type: string
+
+    Doctor:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        qualification:
+          type: string
+        specialization:
+          type: string
+        experience:
+          type: integer
+        consultationFee:
+          type: number
+        availableFrom:
+          type: ["string", "null"]
+        availableTo:
+          type: ["string", "null"]
+        availableDays:
+          type: ["string", "null"]
+        photoUrl:
+          type: ["string", "null"]
+        shopId:
+          type: integer
+        shopName:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+        reviewCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, name, qualification, specialization, experience, consultationFee, shopId, reviewCount, createdAt]
+
+    DoctorInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        qualification:
+          type: string
+          minLength: 1
+        specialization:
+          type: string
+          minLength: 1
+        experience:
+          type: integer
+        consultationFee:
+          type: number
+        availableFrom:
+          type: string
+        availableTo:
+          type: string
+        availableDays:
+          type: string
+        photoUrl:
+          type: string
+        shopId:
+          type: integer
+      required: [name, qualification, specialization, experience, consultationFee, shopId]
+
+    DoctorUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        qualification:
+          type: string
+        specialization:
+          type: string
+        experience:
+          type: integer
+        consultationFee:
+          type: number
+        availableFrom:
+          type: string
+        availableTo:
+          type: string
+        availableDays:
+          type: string
+        photoUrl:
+          type: string
+        shopId:
+          type: integer
+
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        doctorId:
+          type: integer
+        shopId:
+          type: integer
+        appointmentDate:
+          type: string
+        appointmentTime:
+          type: string
+        tokenNumber:
+          type: integer
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        notes:
+          type: ["string", "null"]
+        doctorName:
+          type: ["string", "null"]
+        shopName:
+          type: ["string", "null"]
+        specialization:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, userId, doctorId, shopId, appointmentDate, appointmentTime, tokenNumber, status, createdAt]
+
+    AppointmentInput:
+      type: object
+      properties:
+        doctorId:
+          type: integer
+        shopId:
+          type: integer
+        appointmentDate:
+          type: string
+        appointmentTime:
+          type: string
+        notes:
+          type: string
+      required: [doctorId, shopId, appointmentDate, appointmentTime]
+
+    AppointmentUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+        notes:
+          type: string
+
+    LabTest:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        testName:
+          type: string
+        category:
+          type: string
+        shopId:
+          type: integer
+        scheduledDate:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+        reportUrl:
+          type: ["string", "null"]
+        price:
+          type: number
+        shopName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, userId, testName, category, shopId, status, price, createdAt]
+
+    LabTestInput:
+      type: object
+      properties:
+        testName:
+          type: string
+          minLength: 1
+        category:
+          type: string
+          minLength: 1
+        shopId:
+          type: integer
+        scheduledDate:
+          type: string
+        price:
+          type: number
+      required: [testName, category, shopId, price]
+
+    LabTestUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+        reportUrl:
+          type: string
+        scheduledDate:
+          type: string
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        doctorId:
+          type: ["integer", "null"]
+        shopId:
+          type: ["integer", "null"]
+        rating:
+          type: integer
+        comment:
+          type: ["string", "null"]
+        userName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, userId, rating, createdAt]
+
+    ReviewInput:
+      type: object
+      properties:
+        doctorId:
+          type: integer
+        shopId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+      required: [rating]
+
+    DashboardStats:
+      type: object
+      properties:
+        totalShops:
+          type: integer
+        openShops:
+          type: integer
+        totalDoctors:
+          type: integer
+        totalAppointments:
+          type: integer
+        pendingAppointments:
+          type: integer
+        completedAppointments:
+          type: integer
+        totalLabTests:
+          type: integer
+        totalUsers:
+          type: integer
+      required: [totalShops, openShops, totalDoctors, totalAppointments, pendingAppointments, completedAppointments, totalLabTests, totalUsers]
+
+    Specialization:
+      type: object
+      properties:
+        name:
+          type: string
+        doctorCount:
+          type: integer
+        iconName:
+          type: ["string", "null"]
+      required: [name, doctorCount]
