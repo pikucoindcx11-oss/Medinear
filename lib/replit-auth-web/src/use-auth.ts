@@ -1,7 +1,7 @@
-/// <reference types="vite/client" />
-
 import { useState, useEffect, useCallback } from "react";
 import type { AuthUser } from "@workspace/api-client-react";
+
+export type { AuthUser };
 
 interface AuthState {
   user: AuthUser | null;
@@ -18,14 +18,18 @@ export function useAuth(): AuthState {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/auth/user", { credentials: "include" })
+    fetch("/api/auth/user", {
+      credentials: "include",
+    })
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<{ user: AuthUser | null }>;
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
       })
       .then((data) => {
         if (!cancelled) {
-          setUser(data.user ?? null);
+          setUser(data);
           setIsLoading(false);
         }
       })
@@ -42,12 +46,11 @@ export function useAuth(): AuthState {
   }, []);
 
   const login = useCallback(() => {
-    const base = import.meta.env.BASE_URL.replace(/\/+$/, "") || "/";
-    window.location.href = `/api/login?returnTo=${encodeURIComponent(base)}`;
+    window.location.href = "/api/auth/login";
   }, []);
 
   const logout = useCallback(() => {
-    window.location.href = "/api/logout";
+    window.location.href = "/api/auth/logout";
   }, []);
 
   return {
